@@ -1,3 +1,4 @@
+// OJ/UI/oj-frontend/src/components/Signup.jsx
 import React, { useState } from "react";
 import API from "../api";
 
@@ -16,33 +17,32 @@ export default function Signup({ onSignupSuccess, onSwitchToLogin }) {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (formData.password !== formData.confirmPassword) {
-    setError("Passwords do not match");
-    return;
-  }
-  setError(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    // Call your backend signup API
-    await API.post("/signup", {
-      username: formData.username,
-      email: formData.email,
-      password: formData.password,
-    });
-
-    // If successful, call onSignupSuccess to switch to login
-    if (typeof onSignupSuccess === "function") {
-      onSignupSuccess();
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
     }
-  } catch (err) {
-    // Show backend error message if signup fails
-    setError(err.response?.data?.message || "Signup failed. Please try again.");
-  }
-};
+    setError(null);
 
+    try {
+      const response = await API.post("/signup", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+      // if server returns message or userId, treat as success
+      if (typeof onSignupSuccess === "function") {
+        onSignupSuccess();
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.message || "Signup failed. Please try again.";
+      setError(msg);
+    }
+  };
+
+  // styles preserved verbatim
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -308,7 +308,6 @@ export default function Signup({ onSignupSuccess, onSwitchToLogin }) {
           Signup
         </button>
 
-        {/* Toggle to Login link */}
         <p
           style={{
             marginTop: "20px",
@@ -327,4 +326,3 @@ export default function Signup({ onSignupSuccess, onSwitchToLogin }) {
     </div>
   );
 }
-

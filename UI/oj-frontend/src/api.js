@@ -1,10 +1,12 @@
+// OJ/UI/oj-frontend/src/api.js
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000", // Change if your backend runs on a different port
+  // Read from environment at build time
+  baseURL: import.meta.env.VITE_API_URL || "https://your-backend-service.onrender.com",
 });
 
-// Automatically attach token from localStorage to all requests
+// Attach token automatically for authenticated requests
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -13,13 +15,14 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// API calls
-export const getProfile = (userId) => API.get(`/profile/${userId}`);
+// Auth endpoints
+export const signupUser = (data) => API.post("/signup", data);
+export const loginUser = (credentials) => API.post("/login", credentials);
 
-// Now with optional limit param, default 5
+// Profile & Submission endpoints
+export const getProfile = (userId) => API.get(`/profile/${userId}`);
 export const getUserSubmissions = (userId, limit = 5) =>
   API.get("/submissions", { params: { userId, limit } });
-
 export const submitCode = (submissionData) => API.post("/run", submissionData);
 
 export default API;

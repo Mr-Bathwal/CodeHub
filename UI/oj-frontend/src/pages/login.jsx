@@ -1,3 +1,4 @@
+// OJ/UI/oj-frontend/src/components/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
@@ -7,29 +8,32 @@ export default function Login({ onSwitchToSignup }) {
   const [focusInput, setFocusInput] = useState(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
-  const navigate = useNavigate();  // for redirecting after login
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
-  try {
-    const response = await API.post('/login', {
-      email: formData.email,
-      password: formData.password,
-    });
-    const token = response.data.token;
-    localStorage.setItem("token", token);
-    localStorage.setItem("userId", response.data.userId);
-    navigate("/dashboard");
-  } catch (err) {
-    setError("Invalid credentials");
-  }
-};
+    e.preventDefault();
+    setError(null);
+    try {
+      const response = await API.post("/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", response.data.userId);
+      navigate("/dashboard");
+    } catch (err) {
+      // Prefer server-provided message
+      const msg = err.response?.data?.error || err.response?.data?.message || "Invalid credentials";
+      setError(msg);
+    }
+  };
 
+  // ... all your original styles exactly as before (kept verbatim) ...
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
