@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import API from "../api";
 
-export default function Signup() {
+export default function Signup({ onSignupSuccess, onSwitchToLogin }) {
   const [hover, setHover] = useState(false);
   const [focusInput, setFocusInput] = useState(null);
   const [formData, setFormData] = useState({
@@ -15,17 +16,32 @@ export default function Signup() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simple client-side validation example:
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (formData.password !== formData.confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+  setError(null);
+
+  try {
+    // Call your backend signup API
+    await API.post("/signup", {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    // If successful, call onSignupSuccess to switch to login
+    if (typeof onSignupSuccess === "function") {
+      onSignupSuccess();
     }
-    setError(null);
-    // TODO: Add signup API call here
-    alert("Signup form submitted! Implement signup logic.");
-  };
+  } catch (err) {
+    // Show backend error message if signup fails
+    setError(err.response?.data?.message || "Signup failed. Please try again.");
+  }
+};
 
   const containerStyle = {
     minHeight: "100vh",
@@ -61,8 +77,7 @@ export default function Signup() {
     width: "100%",
     maxWidth: "420px",
     color: "#b0f7ff",
-    boxShadow:
-      "0 4px 25px rgba(0, 255, 214, 0.15), inset 0 0 6px #00ffd6",
+    boxShadow: "0 4px 25px rgba(0, 255, 214, 0.15), inset 0 0 6px #00ffd6",
     perspective: "800px",
     backdropFilter: "blur(12px)",
     border: "1px solid rgba(0,255,214,0.3)",
@@ -130,24 +145,22 @@ export default function Signup() {
     fontSize: "1.2rem",
     fontWeight: "700",
     color: "#121619",
-    background:
-      "linear-gradient(90deg, #00ffd6, #00ffa2, #00ffd6)",
+    backgroundImage: "linear-gradient(90deg, #00ffd6, #00ffa2, #00ffd6)",
+    backgroundSize: "300% 300%",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "0% 50%",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     userSelect: "none",
-    boxShadow:
-      "0 6px 25px rgba(0, 255, 214, 0.5), inset 0 0 10px rgba(0, 255, 162, 0.8)",
-    transition:
-      "background-position 1.2s ease, transform 0.3s ease, box-shadow 0.3s ease",
-    backgroundSize: "300% 300%",
+    boxShadow: "0 6px 25px rgba(0, 255, 214, 0.15), inset 0 0 10px rgba(0, 255, 162, 0.8)",
+    transition: "background-position 1.2s ease, transform 0.3s ease, box-shadow 0.3s ease",
   };
 
   const buttonHoverStyle = {
     backgroundPosition: "100% 50%",
     transform: "scale(1.12) translateZ(8px)",
-    boxShadow:
-      "0 10px 35px rgba(0, 255, 162, 0.9), inset 0 0 25px rgba(0, 255, 214, 1)",
+    boxShadow: "0 10px 35px rgba(0, 255, 162, 0.9), inset 0 0 25px rgba(0, 255, 214, 1)",
   };
 
   return (
@@ -274,7 +287,14 @@ export default function Signup() {
         />
 
         {error && (
-          <p style={{ color: "#ff4d4d", fontWeight: "600", marginBottom: "20px", textAlign: "center" }}>
+          <p
+            style={{
+              color: "#ff4d4d",
+              fontWeight: "600",
+              marginBottom: "20px",
+              textAlign: "center",
+            }}
+          >
             {error}
           </p>
         )}
@@ -287,7 +307,24 @@ export default function Signup() {
         >
           Signup
         </button>
+
+        {/* Toggle to Login link */}
+        <p
+          style={{
+            marginTop: "20px",
+            textAlign: "center",
+            color: "#00ffd6",
+            cursor: "pointer",
+            userSelect: "none",
+            fontWeight: "600",
+            textDecoration: "underline",
+          }}
+          onClick={onSwitchToLogin}
+        >
+          Already have an account? Login
+        </p>
       </form>
     </div>
   );
 }
+

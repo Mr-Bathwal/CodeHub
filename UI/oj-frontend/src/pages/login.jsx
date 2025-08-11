@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../api";
 
-export default function Login() {
+export default function Login({ onSwitchToSignup }) {
   const [hover, setHover] = useState(false);
   const [focusInput, setFocusInput] = useState(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();  // for redirecting after login
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -11,35 +15,20 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
-  // Clear any previous error (if you add error state later)
+  setError(null);
   try {
-    const response = await fetch("http://localhost:3000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
+    const response = await API.post('/login', {
+      email: formData.email,
+      password: formData.password,
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Login failed");
-      return;
-    }
-
-    // Save token and userId to localStorage
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userId", data.userId);
-
-    // Redirect to dashboard page
-    window.location.href = "/dashboard";
-  } catch (error) {
-    alert("Network error: " + error.message);
+    const token = response.data.token;
+    localStorage.setItem("token", token);
+    localStorage.setItem("userId", response.data.userId);
+    navigate("/dashboard");
+  } catch (err) {
+    setError("Invalid credentials");
   }
 };
-
 
   const containerStyle = {
     minHeight: "100vh",
@@ -75,30 +64,25 @@ export default function Login() {
     width: "100%",
     maxWidth: "420px",
     color: "#b0f7ff",
-    boxShadow:
-      "0 4px 25px rgba(0, 255, 214, 0.15), inset 0 0 6px #00ffd6",
+    boxShadow: "0 4px 25px rgba(0, 255, 214, 0.15), inset 0 0 6px #00ffd6",
     perspective: "800px",
     backdropFilter: "blur(12px)",
     border: "1px solid rgba(0,255,214,0.3)",
   };
-const appNameStyle = {
-  fontSize: "3.5rem",
-  color: "#00ffd6",
-  letterSpacing: "4px",
-  marginBottom: "30px",
-  userSelect: "none",
-  position: "relative",
-  textAlign: "center",
-  fontWeight: "800",
-  fontFamily: "'Share Tech Mono', monospace",
-  textTransform: "none",  // we handle casing manually below
-  // subtle glow:
-  textShadow:
-    "0 0 3px #00ffd6aa, 0 0 9px #00ffd6bb",
-  // extra spacing for 'HUB' to stand out:
- 
-};
 
+  const appNameStyle = {
+    fontSize: "3.5rem",
+    color: "#00ffd6",
+    letterSpacing: "4px",
+    marginBottom: "30px",
+    userSelect: "none",
+    position: "relative",
+    textAlign: "center",
+    fontWeight: "800",
+    fontFamily: "'Share Tech Mono', monospace",
+    textTransform: "none",
+    textShadow: "0 0 3px #00ffd6aa, 0 0 9px #00ffd6bb",
+  };
 
   const labelStyle = {
     display: "block",
@@ -148,59 +132,43 @@ const appNameStyle = {
     fontSize: "1.2rem",
     fontWeight: "700",
     color: "#121619",
-    background:
-      "linear-gradient(90deg, #00ffd6, #00ffa2, #00ffd6)",
+    backgroundImage: "linear-gradient(90deg, #00ffd6, #00ffa2, #00ffd6)",
+    backgroundSize: "300% 300%",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "0% 50%",
     border: "none",
     borderRadius: "10px",
     cursor: "pointer",
     userSelect: "none",
-    boxShadow:
-      "0 6px 25px rgba(0, 255, 214, 0.5), inset 0 0 10px rgba(0, 255, 162, 0.8)",
-    transition:
-      "background-position 1.2s ease, transform 0.3s ease, box-shadow 0.3s ease",
-    backgroundSize: "300% 300%",
+    boxShadow: "0 6px 25px rgba(0, 255, 214, 0.5), inset 0 0 10px rgba(0, 255, 162, 0.8)",
+    transition: "background-position 1.2s ease, transform 0.3s ease, box-shadow 0.3s ease",
   };
 
   const buttonHoverStyle = {
     backgroundPosition: "100% 50%",
     transform: "scale(1.12) translateZ(8px)",
-    boxShadow:
-      "0 10px 35px rgba(0, 255, 162, 0.9), inset 0 0 25px rgba(0, 255, 214, 1)",
+    boxShadow: "0 10px 35px rgba(0, 255, 162, 0.9), inset 0 0 25px rgba(0, 255, 214, 1)",
   };
 
   return (
     <div style={containerStyle}>
-      <style>{`
-        @keyframes glow {
-          0% {
-            text-shadow:
-              0 0 8px #00ffd6,
-              0 0 20px #00ffd6,
-              0 0 30px #00ffd6,
-              0 0 40px #00ffd6;
-          }
-          100% {
-            text-shadow:
-              0 0 12px #00ffa2,
-              0 0 30px #00ffa2,
-              0 0 45px #00ffa2,
-              0 0 60px #00ffa2;
-          }
-        }
-      `}</style>
       <form style={formStyle} onSubmit={handleSubmit} noValidate>
-       <div style={appNameStyle}>
-  <span style={{ textTransform: "lowercase" }}>code</span>
-  <span style={{ 
-    textTransform: "uppercase", 
-    color: "#00ffa2", 
-    letterSpacing: "12px", 
-    fontWeight: "bold",
-   
-    paddingBottom: "6px",
-    userSelect: "none"
-  }}>HUB</span>
-</div>
+        <div style={appNameStyle}>
+          <span style={{ textTransform: "lowercase" }}>code</span>
+          <span
+            style={{
+              textTransform: "uppercase",
+              color: "#00ffa2",
+              letterSpacing: "12px",
+              fontWeight: "bold",
+              paddingBottom: "6px",
+              userSelect: "none",
+            }}
+          >
+            HUB
+          </span>
+        </div>
+
         <label
           htmlFor="email"
           style={{
@@ -253,6 +221,19 @@ const appNameStyle = {
           autoComplete="current-password"
         />
 
+        {error && (
+          <p
+            style={{
+              color: "#ff4d4d",
+              fontWeight: "600",
+              marginBottom: "20px",
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </p>
+        )}
+
         <button
           type="submit"
           style={hover ? { ...buttonStyle, ...buttonHoverStyle } : buttonStyle}
@@ -261,6 +242,21 @@ const appNameStyle = {
         >
           Login
         </button>
+
+        <p
+          style={{
+            marginTop: "20px",
+            textAlign: "center",
+            color: "#00ffd6",
+            cursor: "pointer",
+            userSelect: "none",
+            fontWeight: "600",
+            textDecoration: "underline",
+          }}
+          onClick={onSwitchToSignup}
+        >
+          Don't have an account? Signup
+        </p>
       </form>
     </div>
   );

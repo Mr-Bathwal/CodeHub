@@ -1,18 +1,19 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Signup from "./pages/Signup";
-import Login from "./pages/login";
+import { Routes, Route } from "react-router-dom";
+
+import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
-import ForgotPassword from "./pages/Forgotpassword";
+import CodeEditor from "./pages/CodeEditor";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/signup" />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/" element={<AuthPage defaultView="login" />} />
+      <Route path="/login" element={<AuthPage defaultView="login" />} />
+      <Route path="/signup" element={<AuthPage defaultView="signup" />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/code-editor" element={<CodeEditor />} />
     </Routes>
   );
 }
+
