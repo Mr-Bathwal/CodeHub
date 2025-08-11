@@ -8,6 +8,7 @@ export default function Dashboard() {
 
   const [userData, setUserData] = useState(null);
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Controls for CodeEditor props
   const [problemTitle, setProblemTitle] = useState("");
@@ -15,30 +16,49 @@ export default function Dashboard() {
   const [runSubmitTrigger, setRunSubmitTrigger] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    if (!token || !userId) {
+      console.warn("No token or userId found → redirecting to login");
       navigate("/login");
       return;
     }
 
-    const userId = localStorage.getItem("userId");
+    console.log("Requesting profile for userId:", userId);
+
     API.get(`/profile/${userId}`)
       .then((res) => {
+        console.log("Profile API success:", res.data);
         setUserData(res.data.user);
         const submissions = res.data.submissions || [];
-        const total = submissions.length;
-        const accepted = submissions.filter(
-          (s) => s.status?.toLowerCase() === "accepted"
-        ).length;
-
-        setStats({ totalSubmissions: total, acceptedCount: accepted });
+        setStats({
+          totalSubmissions: submissions.length,
+          acceptedCount: submissions.filter(
+            (s) => s.status?.toLowerCase() === "accepted"
+          ).length,
+        });
+        setLoading(false);
       })
-      .catch(() => {
-        localStorage.clear();
-        navigate("/login");
+      .catch((err) => {
+        console.error(
+          "Profile API error:",
+          err.response?.status,
+          err.response?.data
+        );
+        setLoading(false);
+
+        if (err.response?.status === 401) {
+          console.warn("Unauthorized → clearing session");
+          localStorage.clear();
+          navigate("/login");
+        } else {
+          alert("Failed to load profile. Please try again later.");
+        }
       });
   }, [navigate]);
 
-  if (!userData || !stats) {
+  if (loading) {
     return (
       <p
         style={{
@@ -49,6 +69,21 @@ export default function Dashboard() {
         }}
       >
         Loading dashboard...
+      </p>
+    );
+  }
+
+  if (!userData || !stats) {
+    return (
+      <p
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+          color: "red",
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        }}
+      >
+        Unable to load your data. Please try again.
       </p>
     );
   }
@@ -115,13 +150,12 @@ export default function Dashboard() {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                size={3} // Show all options expanded, adjust size to number of languages
+                size={3}
                 style={styles.select}
               >
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
                 <option value="java">Java</option>
-                {/* Add more languages here */}
               </select>
             </label>
 
@@ -164,9 +198,7 @@ const styles = {
     userSelect: "none",
     margin: 0,
   },
-  code: {
-    textTransform: "lowercase",
-  },
+  code: { textTransform: "lowercase" },
   HUB: {
     textTransform: "uppercase",
     color: "#00a86b",
@@ -174,11 +206,7 @@ const styles = {
     marginLeft: "6px",
     letterSpacing: "8px",
   },
-  userSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
+  userSection: { display: "flex", alignItems: "center", gap: "16px" },
   username: {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     fontSize: "1rem",
@@ -194,13 +222,11 @@ const styles = {
     cursor: "pointer",
     transition: "background-color 0.25s ease",
   },
-
   mainContainer: {
     display: "flex",
-    height: "calc(100vh - 56px)", // header height approx
+    height: "calc(100vh - 56px)",
     backgroundColor: "#ffffff",
   },
-
   sidebar: {
     width: "320px",
     backgroundColor: "#f9f9f9",
@@ -211,7 +237,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
-
   card: {
     backgroundColor: "#fff",
     borderRadius: "6px",
@@ -221,21 +246,18 @@ const styles = {
     fontWeight: "500",
     userSelect: "none",
   },
-
   cardTitle: {
     marginBottom: "12px",
     fontSize: "1.2rem",
     borderBottom: "2px solid #00a86b",
     paddingBottom: "6px",
   },
-
   label: {
     display: "block",
     fontWeight: "600",
     color: "#222",
     marginBottom: "6px",
   },
-
   input: {
     width: "100%",
     padding: "8px 12px",
@@ -245,7 +267,6 @@ const styles = {
     marginTop: "6px",
     boxSizing: "border-box",
   },
-
   select: {
     width: "100%",
     marginTop: "6px",
@@ -255,7 +276,6 @@ const styles = {
     boxSizing: "border-box",
     cursor: "pointer",
   },
-
   runSubmitButton: {
     backgroundColor: "#00a86b",
     color: "#fff",
@@ -268,15 +288,13 @@ const styles = {
     boxShadow: "0 6px 15px rgba(0,168,107,0.4)",
     transition: "background-color 0.3s ease, transform 0.3s ease",
   },
-
   editorSection: {
     flex: 1,
     padding: "24px",
     backgroundColor: "#1e252b",
     display: "flex",
     flexDirection: "column",
-    borderRadius: "0 8px 8px 0", // round only right corners
+    borderRadius: "0 8px 8px 0",
     boxShadow: "inset 0 0 8px rgba(0, 0, 0, 0.7)",
   },
 };
-
