@@ -28,13 +28,12 @@ Built with a **secure backend, fast frontend, and production-grade deployment**.
 
 ### 📸 Demo Screenshots  
 **Login Page**  
-![Login](screenshots/login.png)  
+![Login]()  
 
 **Problem Dashboard**  
-![Dashboard](screenshots/dashboard.png)  
+![Dashboard](Screenshot 2025-08-11 155959.png)  
 
-**Submission Result**  
-![Submission](screenshots/submission.png)  
+
 
 
 
