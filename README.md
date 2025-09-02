@@ -30,8 +30,6 @@ Built with a **secure backend, fast frontend, and production-grade deployment**.
 **Login Page**  
 ![Login]()  
 
-**Problem Dashboard**  
-![Dashboard](Screenshot 2025-08-11 155959.png)  
 
 
 
